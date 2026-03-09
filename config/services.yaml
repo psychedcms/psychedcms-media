@@ -1,0 +1,34 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    PsychedCms\Media\:
+        resource: '../src/'
+        exclude:
+            - '../src/Entity/'
+            - '../src/PsychedCmsMediaBundle.php'
+
+    PsychedCms\Media\Repository\MediaRepositoryInterface:
+        alias: PsychedCms\Media\Repository\MediaRepository
+
+    PsychedCms\Media\Service\FileValidatorInterface:
+        alias: PsychedCms\Media\Service\FileValidator
+
+    PsychedCms\Media\Service\UploadPathResolverInterface:
+        alias: PsychedCms\Media\Service\UploadPathResolver
+
+    PsychedCms\Media\State\MediaUploadProcessor:
+        arguments:
+            $defaultStorage: '@default.storage'
+
+    PsychedCms\Media\State\MediaDeleteProcessor:
+        arguments:
+            $defaultStorage: '@default.storage'
+
+    PsychedCms\Media\Serializer\MediaUrlNormalizer:
+        arguments:
+            $imgproxyUrl: '%env(default::IMGPROXY_URL)%'
+            $mediaPublicUrl: '%env(default::MEDIA_PUBLIC_URL)%'
+        tags:
+            - { name: 'serializer.normalizer', priority: 64 }

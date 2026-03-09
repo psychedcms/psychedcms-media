@@ -1,0 +1,39 @@
+{
+    "name": "psychedcms/psychedcms-media",
+    "description": "Media management system for PsychedCMS",
+    "type": "symfony-bundle",
+    "license": "proprietary",
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "require": {
+        "php": ">=8.2",
+        "api-platform/core": "^4.2",
+        "doctrine/doctrine-bundle": "^2.18",
+        "doctrine/orm": "^3.0",
+        "gedmo/doctrine-extensions": "^3.22",
+        "league/flysystem-bundle": "^3.3",
+        "psychedcms/psychedcms-core": "@dev",
+        "symfony/config": "^7.4",
+        "symfony/dependency-injection": "^7.4",
+        "symfony/http-foundation": "^7.4",
+        "symfony/http-kernel": "^7.4",
+        "symfony/string": "^7.4",
+        "symfony/validator": "^7.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "PsychedCms\\Media\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "PsychedCms\\Media\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
