@@ -17,13 +17,13 @@ class StorageStatsController
     ) {
     }
 
-    #[Route('/api/media/stats', name: 'api_media_stats', methods: ['GET'])]
+    #[Route('/api/media/stats', name: 'api_media_stats', methods: ['GET'], priority: 10)]
     public function stats(): JsonResponse
     {
         return new JsonResponse($this->statsProvider->getStats());
     }
 
-    #[Route('/api/media/orphaned', name: 'api_media_orphaned', methods: ['GET'])]
+    #[Route('/api/media/orphaned', name: 'api_media_orphaned', methods: ['GET'], priority: 10)]
     public function orphaned(): JsonResponse
     {
         return new JsonResponse([
