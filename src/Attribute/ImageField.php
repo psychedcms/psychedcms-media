@@ -32,6 +32,9 @@ final class ImageField extends FieldAttribute
         bool $translatable = false,
         bool $sanitise = true,
         ?bool $allowHtml = null,
+        ?bool $listColumn = null,
+        ?int $listColumnOrder = null,
+        ?string $listDisplayPattern = null,
     ) {
         parent::__construct(
             label: $label,
@@ -51,6 +54,9 @@ final class ImageField extends FieldAttribute
             translatable: $translatable,
             sanitise: $sanitise,
             allowHtml: $allowHtml,
+            listColumn: $listColumn,
+            listColumnOrder: $listColumnOrder,
+            listDisplayPattern: $listDisplayPattern,
         );
     }
 
