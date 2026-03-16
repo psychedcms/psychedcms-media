@@ -13,4 +13,9 @@ interface FileValidatorInterface
      * @throws \PsychedCms\Media\Exception\FileSizeExceededException
      */
     public function validate(UploadedFile $file): void;
+
+    /**
+     * @throws \PsychedCms\Media\Exception\StorageQuotaExceededException
+     */
+    public function validateQuota(int $currentTotal, int $newFileSize, int $quota): void;
 }

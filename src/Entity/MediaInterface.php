@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace PsychedCms\Media\Entity;
 
 use DateTimeImmutable;
+use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Uid\Ulid;
 
 interface MediaInterface
 {
-    public function getId(): ?int;
+    public function getId(): ?Ulid;
 
     public function getFilename(): ?string;
 
@@ -49,6 +51,27 @@ interface MediaInterface
     public function getStoragePath(): ?string;
 
     public function setStoragePath(string $storagePath): static;
+
+    public function getChecksum(): ?string;
+
+    public function setChecksum(?string $checksum): static;
+
+    public function getExifData(): ?array;
+
+    public function setExifData(?array $exifData): static;
+
+    public function getOptimizedVariants(): ?array;
+
+    public function setOptimizedVariants(?array $optimizedVariants): static;
+
+    /**
+     * @return Collection<int, MediaCategory>
+     */
+    public function getCategories(): Collection;
+
+    public function addCategory(MediaCategory $category): static;
+
+    public function removeCategory(MediaCategory $category): static;
 
     public function getCreatedAt(): ?DateTimeImmutable;
 

@@ -9,7 +9,6 @@ use ApiPlatform\State\ProcessorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use League\Flysystem\FilesystemOperator;
 use PsychedCms\Media\Entity\Media;
-use PsychedCms\Media\Repository\MediaRepositoryInterface;
 use PsychedCms\Media\Service\ExifExtractorInterface;
 use PsychedCms\Media\Service\FileValidatorInterface;
 use PsychedCms\Media\Service\UploadPathResolverInterface;
@@ -19,7 +18,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 /**
  * @implements ProcessorInterface<Media, Media>
  */
-class MediaUploadProcessor implements ProcessorInterface
+class MediaReplaceProcessor implements ProcessorInterface
 {
     public function __construct(
         private readonly FilesystemOperator $defaultStorage,
@@ -27,15 +26,10 @@ class MediaUploadProcessor implements ProcessorInterface
         private readonly RequestStack $requestStack,
         private readonly FileValidatorInterface $fileValidator,
         private readonly UploadPathResolverInterface $uploadPathResolver,
-        private readonly MediaRepositoryInterface $mediaRepository,
         private readonly ExifExtractorInterface $exifExtractor,
-        private readonly int $storageQuota = 0,
     ) {
     }
 
-    /**
-     * @param Media $data
-     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): Media
     {
         $request = $this->requestStack->getCurrentRequest();
@@ -45,17 +39,30 @@ class MediaUploadProcessor implements ProcessorInterface
 
         $uploadedFile = $request->files->get('file');
         if ($uploadedFile === null) {
-            throw new BadRequestHttpException('No file uploaded. Send file as "file" field in multipart/form-data.');
+            throw new BadRequestHttpException('No file uploaded.');
         }
 
         $this->fileValidator->validate($uploadedFile);
 
-        // Quota check
-        if ($this->storageQuota > 0) {
-            $currentTotal = $this->mediaRepository->getTotalStorageSize();
-            $this->fileValidator->validateQuota($currentTotal, $uploadedFile->getSize(), $this->storageQuota);
+        // Delete old file
+        $oldPath = $data->getStoragePath();
+        if ($oldPath !== null && $this->defaultStorage->fileExists($oldPath)) {
+            $this->defaultStorage->delete($oldPath);
         }
 
+        // Delete old variants
+        $oldVariants = $data->getOptimizedVariants();
+        if ($oldVariants !== null) {
+            foreach ($oldVariants as $variant) {
+                $variantPath = $variant['storagePath'] ?? null;
+                if ($variantPath !== null && $this->defaultStorage->fileExists($variantPath)) {
+                    $this->defaultStorage->delete($variantPath);
+                }
+            }
+            $data->setOptimizedVariants(null);
+        }
+
+        // Upload new file
         $originalFilename = $uploadedFile->getClientOriginalName();
         $sanitizedFilename = $this->uploadPathResolver->sanitizeFilename($originalFilename);
         $contentType = $request->request->get('contentType');
@@ -71,50 +78,33 @@ class MediaUploadProcessor implements ProcessorInterface
         }
 
         $mimeType = $uploadedFile->getMimeType() ?? $uploadedFile->getClientMimeType();
-
-        // SHA-256 checksum
         $checksum = hash_file('sha256', $uploadedFile->getPathname());
 
-        $media = new Media();
-        $media->setFilename($sanitizedFilename);
-        $media->setOriginalFilename($originalFilename);
-        $media->setMimeType($mimeType);
-        $media->setSize($uploadedFile->getSize());
-        $media->setStoragePath($storagePath);
-        $media->setChecksum($checksum ?: null);
+        $data->setFilename($sanitizedFilename);
+        $data->setOriginalFilename($originalFilename);
+        $data->setMimeType($mimeType);
+        $data->setSize($uploadedFile->getSize());
+        $data->setStoragePath($storagePath);
+        $data->setChecksum($checksum ?: null);
+        $data->setWidth(null);
+        $data->setHeight(null);
+        $data->setExifData(null);
 
         if (str_starts_with($mimeType, 'image/') && $mimeType !== 'image/svg+xml') {
             $imageSize = @getimagesize($uploadedFile->getPathname());
             if ($imageSize !== false) {
-                $media->setWidth($imageSize[0]);
-                $media->setHeight($imageSize[1]);
+                $data->setWidth($imageSize[0]);
+                $data->setHeight($imageSize[1]);
             }
         }
 
-        // EXIF extraction (JPEG/TIFF only)
         $exifData = $this->exifExtractor->extract($uploadedFile->getPathname(), $mimeType);
         if ($exifData !== null) {
-            $media->setExifData($exifData);
+            $data->setExifData($exifData);
         }
 
-        $altText = $request->request->get('altText');
-        if ($altText !== null) {
-            $media->setAltText($altText);
-        }
-
-        $title = $request->request->get('title');
-        if ($title !== null) {
-            $media->setTitle($title);
-        }
-
-        $description = $request->request->get('description');
-        if ($description !== null) {
-            $media->setDescription($description);
-        }
-
-        $this->entityManager->persist($media);
         $this->entityManager->flush();
 
-        return $media;
+        return $data;
     }
 }

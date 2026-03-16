@@ -6,6 +6,7 @@ namespace PsychedCms\Media\Service;
 
 use PsychedCms\Media\Exception\FileSizeExceededException;
 use PsychedCms\Media\Exception\InvalidFileTypeException;
+use PsychedCms\Media\Exception\StorageQuotaExceededException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class FileValidator implements FileValidatorInterface
@@ -60,6 +61,13 @@ class FileValidator implements FileValidatorInterface
 
         if ($mimeType === 'image/svg+xml') {
             $this->scanSvgForScripts($file);
+        }
+    }
+
+    public function validateQuota(int $currentTotal, int $newFileSize, int $quota): void
+    {
+        if (($currentTotal + $newFileSize) > $quota) {
+            throw new StorageQuotaExceededException($currentTotal, $newFileSize, $quota);
         }
     }
 

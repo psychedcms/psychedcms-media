@@ -1,3 +1,6 @@
+parameters:
+    env(MEDIA_STORAGE_QUOTA): '0'
+
 services:
     _defaults:
         autowire: true
@@ -12,19 +15,58 @@ services:
     PsychedCms\Media\Repository\MediaRepositoryInterface:
         alias: PsychedCms\Media\Repository\MediaRepository
 
+    PsychedCms\Media\Repository\MediaCategoryRepositoryInterface:
+        alias: PsychedCms\Media\Repository\MediaCategoryRepository
+
     PsychedCms\Media\Service\FileValidatorInterface:
         alias: PsychedCms\Media\Service\FileValidator
 
     PsychedCms\Media\Service\UploadPathResolverInterface:
         alias: PsychedCms\Media\Service\UploadPathResolver
 
+    PsychedCms\Media\Service\ExifExtractorInterface:
+        alias: PsychedCms\Media\Service\ExifExtractor
+
+    PsychedCms\Media\Service\StorageStatsProviderInterface:
+        alias: PsychedCms\Media\Service\StorageStatsProvider
+
+    PsychedCms\Media\Service\OrphanedFileDetectorInterface:
+        alias: PsychedCms\Media\Service\OrphanedFileDetector
+
+    PsychedCms\Media\Service\ImageOptimizerInterface:
+        alias: PsychedCms\Media\Service\ImageOptimizer
+
     PsychedCms\Media\State\MediaUploadProcessor:
         arguments:
             $defaultStorage: '@default.storage'
+            $storageQuota: '%env(int:MEDIA_STORAGE_QUOTA)%'
 
     PsychedCms\Media\State\MediaDeleteProcessor:
         arguments:
             $defaultStorage: '@default.storage'
+
+    PsychedCms\Media\State\MediaReplaceProcessor:
+        arguments:
+            $defaultStorage: '@default.storage'
+
+    PsychedCms\Media\State\MediaBulkDeleteProcessor:
+        arguments:
+            $defaultStorage: '@default.storage'
+
+    PsychedCms\Media\Service\OrphanedFileDetector:
+        arguments:
+            $defaultStorage: '@default.storage'
+
+    PsychedCms\Media\Service\ImageOptimizer:
+        arguments:
+            $defaultStorage: '@default.storage'
+            $enableWebp: true
+            $enableAvif: false
+            $quality: 85
+
+    PsychedCms\Media\Service\StorageStatsProvider:
+        arguments:
+            $storageQuota: '%env(int:MEDIA_STORAGE_QUOTA)%'
 
     PsychedCms\Media\Serializer\MediaUrlNormalizer:
         arguments:

@@ -10,11 +10,15 @@ use PsychedCms\Core\Attribute\Field\FieldAttribute;
 #[Attribute(Attribute::TARGET_PROPERTY)]
 final class ImageListField extends FieldAttribute
 {
+    /**
+     * @param array<string, array{int, int}>|null $dimensions Named formats with [width, height]
+     */
     public function __construct(
         public readonly ?int $maxSize = null,
         public readonly ?array $allowedTypes = null,
         public readonly int $thumbnailWidth = 400,
         public readonly int $thumbnailHeight = 400,
+        public readonly ?array $dimensions = null,
         public readonly ?int $min = null,
         public readonly ?int $max = null,
         public readonly bool $sortable = true,
@@ -89,6 +93,10 @@ final class ImageListField extends FieldAttribute
 
         if ($this->thumbnailHeight !== 400) {
             $schema['thumbnailHeight'] = $this->thumbnailHeight;
+        }
+
+        if ($this->dimensions !== null) {
+            $schema['dimensions'] = $this->dimensions;
         }
 
         if ($this->min !== null) {

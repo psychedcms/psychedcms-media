@@ -13,12 +13,14 @@
         "league/flysystem-bundle": "^3.3",
         "php": ">=8.2",
         "psychedcms/psychedcms-core": "@dev",
+        "spatie/image-optimizer": "^1.7",
         "symfony/config": "^7.4",
         "symfony/dependency-injection": "^7.4",
         "symfony/http-foundation": "^7.4",
         "symfony/http-kernel": "^7.4",
         "symfony/mime": "^7.4",
         "symfony/string": "^7.4",
+        "symfony/uid": "^7.4",
         "symfony/validator": "^7.4"
     },
     "require-dev": {

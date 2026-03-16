@@ -5,19 +5,23 @@ declare(strict_types=1);
 namespace PsychedCms\Media\Entity;
 
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 trait MediaTrait
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(type: 'ulid', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: 'doctrine.ulid_generator')]
     #[Groups(['media:read'])]
-    private ?int $id = null;
+    private ?Ulid $id = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
@@ -70,6 +74,24 @@ trait MediaTrait
     #[Groups(['media:read'])]
     private ?string $storagePath = null;
 
+    #[ORM\Column(length: 64, nullable: true)]
+    #[Groups(['media:read'])]
+    private ?string $checksum = null;
+
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Groups(['media:read'])]
+    private ?array $exifData = null;
+
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Groups(['media:read'])]
+    private ?array $optimizedVariants = null;
+
+    /** @var Collection<int, MediaCategory> */
+    #[ORM\ManyToMany(targetEntity: MediaCategory::class)]
+    #[ORM\JoinTable(name: 'media_media_category')]
+    #[Groups(['media:read', 'media:write'])]
+    private Collection $categories;
+
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     #[Gedmo\Timestampable(on: 'create')]
     #[Groups(['media:read'])]
@@ -80,7 +102,12 @@ trait MediaTrait
     #[Groups(['media:read'])]
     private ?DateTimeImmutable $updatedAt = null;
 
-    public function getId(): ?int
+    public function __construct()
+    {
+        $this->categories = new ArrayCollection();
+    }
+
+    public function getId(): ?Ulid
     {
         return $this->id;
     }
@@ -201,6 +228,66 @@ trait MediaTrait
     public function setStoragePath(string $storagePath): static
     {
         $this->storagePath = $storagePath;
+
+        return $this;
+    }
+
+    public function getChecksum(): ?string
+    {
+        return $this->checksum;
+    }
+
+    public function setChecksum(?string $checksum): static
+    {
+        $this->checksum = $checksum;
+
+        return $this;
+    }
+
+    public function getExifData(): ?array
+    {
+        return $this->exifData;
+    }
+
+    public function setExifData(?array $exifData): static
+    {
+        $this->exifData = $exifData;
+
+        return $this;
+    }
+
+    public function getOptimizedVariants(): ?array
+    {
+        return $this->optimizedVariants;
+    }
+
+    public function setOptimizedVariants(?array $optimizedVariants): static
+    {
+        $this->optimizedVariants = $optimizedVariants;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, MediaCategory>
+     */
+    public function getCategories(): Collection
+    {
+        return $this->categories;
+    }
+
+    public function addCategory(MediaCategory $category): static
+    {
+        if (!$this->categories->contains($category)) {
+            $this->categories->add($category);
+        }
+
+        return $this;
+    }
+
+    public function removeCategory(MediaCategory $category): static
+    {
+        $this->categories->removeElement($category);
 
         return $this;
     }

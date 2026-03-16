@@ -46,6 +46,25 @@ class MediaUrlNormalizer implements NormalizerInterface, NormalizerAwareInterfac
             self::DEFAULT_THUMBNAIL_HEIGHT,
         );
 
+        // Add variant URLs
+        $variants = $object->getOptimizedVariants();
+        if ($variants !== null) {
+            $variantUrls = [];
+            foreach ($variants as $variantFormat => $variant) {
+                $variantPath = $variant['storagePath'] ?? null;
+                if ($variantPath !== null) {
+                    $variantUrls[$variantFormat] = [
+                        'url' => $this->buildOriginalUrl($variantPath),
+                        'mimeType' => $variant['mimeType'] ?? null,
+                        'size' => $variant['size'] ?? null,
+                    ];
+                }
+            }
+            if ($variantUrls !== []) {
+                $data['variants'] = $variantUrls;
+            }
+        }
+
         return $data;
     }
 

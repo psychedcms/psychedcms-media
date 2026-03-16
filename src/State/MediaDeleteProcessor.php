@@ -32,6 +32,17 @@ class MediaDeleteProcessor implements ProcessorInterface
             $this->defaultStorage->delete($storagePath);
         }
 
+        // Delete optimized variants
+        $variants = $data->getOptimizedVariants();
+        if ($variants !== null) {
+            foreach ($variants as $variant) {
+                $variantPath = $variant['storagePath'] ?? null;
+                if ($variantPath !== null && $this->defaultStorage->fileExists($variantPath)) {
+                    $this->defaultStorage->delete($variantPath);
+                }
+            }
+        }
+
         $this->entityManager->remove($data);
         $this->entityManager->flush();
     }
