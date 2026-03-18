@@ -40,6 +40,7 @@ services:
         arguments:
             $defaultStorage: '@default.storage'
             $storageQuota: '%env(int:MEDIA_STORAGE_QUOTA)%'
+            $storageLocator: '@psychedcms.storage.locator'
 
     PsychedCms\Media\State\MediaDeleteProcessor:
         arguments:
@@ -72,5 +73,6 @@ services:
         arguments:
             $imgproxyUrl: '%env(default::IMGPROXY_URL)%'
             $mediaPublicUrl: '%env(default::MEDIA_PUBLIC_URL)%'
+            $storagePublicUrls: '%psychedcms_media.storage_public_urls%'
         tags:
             - { name: 'serializer.normalizer', priority: 64 }

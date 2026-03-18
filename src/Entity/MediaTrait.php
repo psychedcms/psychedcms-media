@@ -74,6 +74,10 @@ trait MediaTrait
     #[Groups(['media:read'])]
     private ?string $storagePath = null;
 
+    #[ORM\Column(length: 50, options: ['default' => 'content'])]
+    #[Groups(['media:read'])]
+    private string $storage = 'content';
+
     #[ORM\Column(length: 64, nullable: true)]
     #[Groups(['media:read'])]
     private ?string $checksum = null;
@@ -228,6 +232,18 @@ trait MediaTrait
     public function setStoragePath(string $storagePath): static
     {
         $this->storagePath = $storagePath;
+
+        return $this;
+    }
+
+    public function getStorage(): string
+    {
+        return $this->storage;
+    }
+
+    public function setStorage(?string $storage): static
+    {
+        $this->storage = $storage ?? 'content';
 
         return $this;
     }

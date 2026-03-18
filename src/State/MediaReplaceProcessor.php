@@ -65,8 +65,8 @@ class MediaReplaceProcessor implements ProcessorInterface
         // Upload new file
         $originalFilename = $uploadedFile->getClientOriginalName();
         $sanitizedFilename = $this->uploadPathResolver->sanitizeFilename($originalFilename);
-        $contentType = $request->request->get('contentType');
-        $directory = $this->uploadPathResolver->resolve($contentType);
+        $dir = $request->request->get('directory') ?? $request->request->get('contentType');
+        $directory = $this->uploadPathResolver->resolve(\is_string($dir) ? $dir : null);
         $storagePath = $directory . $sanitizedFilename;
 
         $stream = fopen($uploadedFile->getPathname(), 'r');

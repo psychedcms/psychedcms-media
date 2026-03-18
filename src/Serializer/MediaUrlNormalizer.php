@@ -17,9 +17,11 @@ class MediaUrlNormalizer implements NormalizerInterface, NormalizerAwareInterfac
     private const DEFAULT_THUMBNAIL_WIDTH = 400;
     private const DEFAULT_THUMBNAIL_HEIGHT = 400;
 
+    /** @param array<string, string> $storagePublicUrls Map of storage name → public base URL */
     public function __construct(
         private readonly ?string $imgproxyUrl = null,
         private readonly ?string $mediaPublicUrl = null,
+        private readonly array $storagePublicUrls = [],
     ) {
     }
 
@@ -39,11 +41,13 @@ class MediaUrlNormalizer implements NormalizerInterface, NormalizerAwareInterfac
             return $data;
         }
 
-        $data['url'] = $this->buildOriginalUrl($storagePath);
+        $storage = $object->getStorage();
+        $data['url'] = $this->buildOriginalUrl($storagePath, $storage);
         $data['thumbnailUrl'] = $this->buildThumbnailUrl(
             $storagePath,
             self::DEFAULT_THUMBNAIL_WIDTH,
             self::DEFAULT_THUMBNAIL_HEIGHT,
+            $storage,
         );
 
         // Add variant URLs
@@ -54,7 +58,7 @@ class MediaUrlNormalizer implements NormalizerInterface, NormalizerAwareInterfac
                 $variantPath = $variant['storagePath'] ?? null;
                 if ($variantPath !== null) {
                     $variantUrls[$variantFormat] = [
-                        'url' => $this->buildOriginalUrl($variantPath),
+                        'url' => $this->buildOriginalUrl($variantPath, $storage),
                         'mimeType' => $variant['mimeType'] ?? null,
                         'size' => $variant['size'] ?? null,
                     ];
@@ -87,31 +91,47 @@ class MediaUrlNormalizer implements NormalizerInterface, NormalizerAwareInterfac
         ];
     }
 
-    private function buildOriginalUrl(string $storagePath): string
+    private function resolvePublicUrl(string $storage): ?string
     {
-        if ($this->mediaPublicUrl !== null && $this->mediaPublicUrl !== '') {
-            return rtrim($this->mediaPublicUrl, '/') . '/orig/' . ltrim($storagePath, '/');
+        if (isset($this->storagePublicUrls[$storage]) && $this->storagePublicUrls[$storage] !== '') {
+            return $this->storagePublicUrls[$storage];
         }
 
+        return $this->mediaPublicUrl;
+    }
+
+    private function buildOriginalUrl(string $storagePath, string $storage = 'content'): string
+    {
         if ($this->imgproxyUrl !== null && $this->imgproxyUrl !== '') {
-            return rtrim($this->imgproxyUrl, '/') . '/orig/' . ltrim($storagePath, '/');
+            return \sprintf(
+                '%s/%s/orig/%s',
+                rtrim($this->imgproxyUrl, '/'),
+                $storage,
+                ltrim($storagePath, '/'),
+            );
+        }
+
+        $publicUrl = $this->resolvePublicUrl($storage);
+        if ($publicUrl !== null && $publicUrl !== '') {
+            return rtrim($publicUrl, '/') . '/' . ltrim($storagePath, '/');
         }
 
         return '/media/' . ltrim($storagePath, '/');
     }
 
-    private function buildThumbnailUrl(string $storagePath, int $width, int $height): string
+    private function buildThumbnailUrl(string $storagePath, int $width, int $height, string $storage = 'content'): string
     {
         if ($this->imgproxyUrl !== null && $this->imgproxyUrl !== '') {
             return \sprintf(
-                '%s/%dx%d/%s',
+                '%s/%s/%dx%d/%s',
                 rtrim($this->imgproxyUrl, '/'),
+                $storage,
                 $width,
                 $height,
                 ltrim($storagePath, '/'),
             );
         }
 
-        return $this->buildOriginalUrl($storagePath);
+        return $this->buildOriginalUrl($storagePath, $storage);
     }
 }

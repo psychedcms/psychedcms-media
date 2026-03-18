@@ -52,6 +52,10 @@ interface MediaInterface
 
     public function setStoragePath(string $storagePath): static;
 
+    public function getStorage(): string;
+
+    public function setStorage(?string $storage): static;
+
     public function getChecksum(): ?string;
 
     public function setChecksum(?string $checksum): static;

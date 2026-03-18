@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use League\Flysystem\FilesystemOperator;
+use Psr\Container\ContainerInterface;
 use PsychedCms\Media\Entity\Media;
 use PsychedCms\Media\Repository\MediaRepositoryInterface;
 use PsychedCms\Media\Service\ExifExtractorInterface;
@@ -30,6 +31,7 @@ class MediaUploadProcessor implements ProcessorInterface
         private readonly MediaRepositoryInterface $mediaRepository,
         private readonly ExifExtractorInterface $exifExtractor,
         private readonly int $storageQuota = 0,
+        private readonly ?ContainerInterface $storageLocator = null,
     ) {
     }
 
@@ -58,12 +60,13 @@ class MediaUploadProcessor implements ProcessorInterface
 
         $originalFilename = $uploadedFile->getClientOriginalName();
         $sanitizedFilename = $this->uploadPathResolver->sanitizeFilename($originalFilename);
-        $contentType = $request->request->get('contentType');
-        $directory = $this->uploadPathResolver->resolve($contentType);
-        $storagePath = $directory . $sanitizedFilename;
+        $dir = $request->request->get('directory') ?? $request->request->get('contentType');
+        $resolvedDir = $this->uploadPathResolver->resolve(\is_string($dir) ? $dir : null);
+        $storagePath = $resolvedDir . $sanitizedFilename;
 
+        $storage = $this->resolveStorage($request->request->get('storage'));
         $stream = fopen($uploadedFile->getPathname(), 'r');
-        $this->defaultStorage->writeStream($storagePath, $stream, [
+        $storage->writeStream($storagePath, $stream, [
             'visibility' => 'public',
         ]);
         if (\is_resource($stream)) {
@@ -112,9 +115,26 @@ class MediaUploadProcessor implements ProcessorInterface
             $media->setDescription($description);
         }
 
+        $storageName = $request->request->get('storage');
+        $media->setStorage(\is_string($storageName) && $storageName !== '' ? $storageName : 'content');
+
         $this->entityManager->persist($media);
         $this->entityManager->flush();
 
         return $media;
+    }
+
+    private function resolveStorage(?string $storageName): FilesystemOperator
+    {
+        if ($storageName === null || $storageName === '' || $storageName === 'content') {
+            return $this->defaultStorage;
+        }
+
+        $key = $storageName . '.storage';
+        if ($this->storageLocator !== null && $this->storageLocator->has($key)) {
+            return $this->storageLocator->get($key);
+        }
+
+        return $this->defaultStorage;
     }
 }

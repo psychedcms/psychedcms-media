@@ -81,6 +81,8 @@ use PsychedCms\Media\State\MediaUploadProcessor;
     'altText' => 'ipartial',
     'description' => 'ipartial',
     'mimeType' => 'start',
+    'storage' => 'exact',
+    'storagePath' => 'start',
 ])]
 #[ApiFilter(DateFilter::class, properties: ['createdAt'])]
 #[ApiFilter(RangeFilter::class, properties: ['size', 'width', 'height'])]

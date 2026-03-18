@@ -15,10 +15,10 @@ class UploadPathResolver implements UploadPathResolverInterface
         $this->slugger = new AsciiSlugger();
     }
 
-    public function resolve(?string $contentType = null): string
+    public function resolve(?string $directory = null): string
     {
         $now = new \DateTimeImmutable();
-        $prefix = $contentType ? strtolower($contentType) : 'uploads';
+        $prefix = $directory ? strtolower($directory) : 'uploads';
 
         return \sprintf('%s/%s/%s/', $prefix, $now->format('Y'), $now->format('m'));
     }

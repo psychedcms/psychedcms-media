@@ -14,6 +14,7 @@ final class ImageField extends FieldAttribute
      * @param array<string, array{int, int}>|null $dimensions Named formats with [width, height]
      */
     public function __construct(
+        public readonly ?string $storage = null,
         public readonly ?int $maxSize = null,
         public readonly ?array $allowedTypes = null,
         public readonly int $thumbnailWidth = 400,
@@ -81,6 +82,10 @@ final class ImageField extends FieldAttribute
     public function toSchemaArray(): array
     {
         $schema = parent::toSchemaArray();
+
+        if ($this->storage !== null) {
+            $schema['storage'] = $this->storage;
+        }
 
         if ($this->maxSize !== null) {
             $schema['maxSize'] = $this->maxSize;
