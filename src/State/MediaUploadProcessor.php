@@ -14,6 +14,7 @@ use PsychedCms\Media\Repository\MediaRepositoryInterface;
 use PsychedCms\Media\Service\ExifExtractorInterface;
 use PsychedCms\Media\Service\FileValidatorInterface;
 use PsychedCms\Media\Service\UploadPathResolverInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -30,6 +31,7 @@ class MediaUploadProcessor implements ProcessorInterface
         private readonly UploadPathResolverInterface $uploadPathResolver,
         private readonly MediaRepositoryInterface $mediaRepository,
         private readonly ExifExtractorInterface $exifExtractor,
+        private readonly Security $security,
         private readonly int $storageQuota = 0,
         private readonly ?ContainerInterface $storageLocator = null,
     ) {
@@ -50,7 +52,9 @@ class MediaUploadProcessor implements ProcessorInterface
             throw new BadRequestHttpException('No file uploaded. Send file as "file" field in multipart/form-data.');
         }
 
-        $this->fileValidator->validate($uploadedFile);
+        $sizeOverride = $request->headers->get('X-Size-Override') === 'acknowledged';
+        $isAdmin = $this->security->isGranted('ROLE_ADMIN');
+        $this->fileValidator->validate($uploadedFile, skipSizeCheck: $sizeOverride && $isAdmin);
 
         // Quota check
         if ($this->storageQuota > 0) {

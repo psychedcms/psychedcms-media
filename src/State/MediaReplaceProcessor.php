@@ -12,6 +12,7 @@ use PsychedCms\Media\Entity\Media;
 use PsychedCms\Media\Service\ExifExtractorInterface;
 use PsychedCms\Media\Service\FileValidatorInterface;
 use PsychedCms\Media\Service\UploadPathResolverInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -27,6 +28,7 @@ class MediaReplaceProcessor implements ProcessorInterface
         private readonly FileValidatorInterface $fileValidator,
         private readonly UploadPathResolverInterface $uploadPathResolver,
         private readonly ExifExtractorInterface $exifExtractor,
+        private readonly Security $security,
     ) {
     }
 
@@ -42,7 +44,9 @@ class MediaReplaceProcessor implements ProcessorInterface
             throw new BadRequestHttpException('No file uploaded.');
         }
 
-        $this->fileValidator->validate($uploadedFile);
+        $sizeOverride = $request->headers->get('X-Size-Override') === 'acknowledged';
+        $isAdmin = $this->security->isGranted('ROLE_ADMIN');
+        $this->fileValidator->validate($uploadedFile, skipSizeCheck: $sizeOverride && $isAdmin);
 
         // Delete old file
         $oldPath = $data->getStoragePath();

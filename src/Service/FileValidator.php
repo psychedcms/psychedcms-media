@@ -11,7 +11,12 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class FileValidator implements FileValidatorInterface
 {
-    private const DEFAULT_MAX_SIZE = 10 * 1024 * 1024; // 10MB
+    private const DEFAULT_MAX_SIZES = [
+        'image' => 10 * 1024 * 1024,    // 10MB
+        'video' => 200 * 1024 * 1024,   // 200MB
+        'audio' => 50 * 1024 * 1024,    // 50MB
+        'document' => 20 * 1024 * 1024, // 20MB
+    ];
 
     private const DEFAULT_ALLOWED_TYPES = [
         // Images
@@ -38,16 +43,25 @@ class FileValidator implements FileValidatorInterface
         'audio/wav',
     ];
 
+    /** @var string[] */
+    private readonly array $allowedTypes;
+
+    /** @var array{image: int, video: int, audio: int, document: int} */
+    private readonly array $maxSizes;
+
     /**
      * @param string[] $allowedTypes
+     * @param array<string, int> $maxSizes
      */
     public function __construct(
-        private readonly array $allowedTypes = self::DEFAULT_ALLOWED_TYPES,
-        private readonly int $maxSize = self::DEFAULT_MAX_SIZE,
+        array $allowedTypes = [],
+        array $maxSizes = [],
     ) {
+        $this->allowedTypes = $allowedTypes === [] ? self::DEFAULT_ALLOWED_TYPES : $allowedTypes;
+        $this->maxSizes = array_merge(self::DEFAULT_MAX_SIZES, $maxSizes);
     }
 
-    public function validate(UploadedFile $file): void
+    public function validate(UploadedFile $file, bool $skipSizeCheck = false): void
     {
         $mimeType = $file->getMimeType() ?? $file->getClientMimeType();
 
@@ -55,13 +69,43 @@ class FileValidator implements FileValidatorInterface
             throw new InvalidFileTypeException($mimeType ?? 'unknown');
         }
 
-        if ($file->getSize() > $this->maxSize) {
-            throw new FileSizeExceededException($file->getSize(), $this->maxSize);
+        if (!$skipSizeCheck) {
+            $maxSize = $this->getMaxSizeForMimeType($mimeType ?? '');
+            if ($file->getSize() > $maxSize) {
+                throw new FileSizeExceededException($file->getSize(), $maxSize);
+            }
         }
 
         if ($mimeType === 'image/svg+xml') {
             $this->scanSvgForScripts($file);
         }
+    }
+
+    /** @return string[] */
+    public function getAllowedTypes(): array
+    {
+        return $this->allowedTypes;
+    }
+
+    /** @return array{image: int, video: int, audio: int, document: int} */
+    public function getMaxSizes(): array
+    {
+        return $this->maxSizes;
+    }
+
+    private function getMaxSizeForMimeType(string $mimeType): int
+    {
+        if (str_starts_with($mimeType, 'image/')) {
+            return $this->maxSizes['image'];
+        }
+        if (str_starts_with($mimeType, 'video/')) {
+            return $this->maxSizes['video'];
+        }
+        if (str_starts_with($mimeType, 'audio/')) {
+            return $this->maxSizes['audio'];
+        }
+
+        return $this->maxSizes['document'];
     }
 
     public function validateQuota(int $currentTotal, int $newFileSize, int $quota): void

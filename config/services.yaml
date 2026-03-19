@@ -1,5 +1,10 @@
 parameters:
     env(MEDIA_STORAGE_QUOTA): '0'
+    env(MEDIA_MAX_IMAGE_SIZE): '10485760'
+    env(MEDIA_MAX_VIDEO_SIZE): '209715200'
+    env(MEDIA_MAX_AUDIO_SIZE): '52428800'
+    env(MEDIA_MAX_DOCUMENT_SIZE): '20971520'
+    psychedcms_media.allowed_types: []
 
 services:
     _defaults:
@@ -17,6 +22,15 @@ services:
 
     PsychedCms\Media\Repository\MediaCategoryRepositoryInterface:
         alias: PsychedCms\Media\Repository\MediaCategoryRepository
+
+    PsychedCms\Media\Service\FileValidator:
+        arguments:
+            $allowedTypes: '%psychedcms_media.allowed_types%'
+            $maxSizes:
+                image: '%env(int:MEDIA_MAX_IMAGE_SIZE)%'
+                video: '%env(int:MEDIA_MAX_VIDEO_SIZE)%'
+                audio: '%env(int:MEDIA_MAX_AUDIO_SIZE)%'
+                document: '%env(int:MEDIA_MAX_DOCUMENT_SIZE)%'
 
     PsychedCms\Media\Service\FileValidatorInterface:
         alias: PsychedCms\Media\Service\FileValidator
