@@ -1,5 +1,6 @@
 parameters:
     env(MEDIA_STORAGE_QUOTA): '0'
+    psychedcms_media.default_bucket: 'hilo-media'
     env(MEDIA_MAX_IMAGE_SIZE): '10485760'
     env(MEDIA_MAX_VIDEO_SIZE): '209715200'
     env(MEDIA_MAX_AUDIO_SIZE): '52428800'
@@ -90,3 +91,10 @@ services:
             $storagePublicUrls: '%psychedcms_media.storage_public_urls%'
         tags:
             - { name: 'serializer.normalizer', priority: 64 }
+
+    PsychedCms\Media\Serializer\ImageFieldNormalizer:
+        arguments:
+            $mediaPublicUrl: '%env(default::MINIO_PUBLIC_URL)%'
+            $bucket: '%env(default:psychedcms_media.default_bucket:MINIO_BUCKET)%'
+        tags:
+            - { name: 'serializer.normalizer', priority: 32 }
