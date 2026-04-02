@@ -79,8 +79,17 @@ class MediaUploadProcessor implements ProcessorInterface
 
         $mimeType = $uploadedFile->getMimeType() ?? $uploadedFile->getClientMimeType();
 
-        // SHA-256 checksum
+        // SHA-256 checksum — deduplicate if same file already exists
         $checksum = hash_file('sha256', $uploadedFile->getPathname());
+        if ($checksum) {
+            $existing = $this->mediaRepository->findByChecksum($checksum);
+            if ($existing !== null) {
+                // Same file already uploaded, remove the duplicate from storage and return existing
+                $storage->delete($storagePath);
+
+                return $existing;
+            }
+        }
 
         $media = new Media();
         $media->setFilename($sanitizedFilename);
