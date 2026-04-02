@@ -55,18 +55,21 @@ use PsychedCms\Media\State\MediaUploadProcessor;
         ),
         new Post(
             uriTemplate: '/media/bulk-delete',
+            inputFormats: ['json' => ['application/json'], 'jsonld' => ['application/ld+json']],
             input: BulkDeleteInput::class,
             processor: MediaBulkDeleteProcessor::class,
             name: 'media_bulk_delete',
         ),
         new Post(
             uriTemplate: '/media/bulk-categorize',
+            inputFormats: ['json' => ['application/json'], 'jsonld' => ['application/ld+json']],
             input: BulkCategorizeInput::class,
             processor: MediaBulkCategorizeProcessor::class,
             name: 'media_bulk_categorize',
         ),
         new Post(
             uriTemplate: '/media/bulk-update',
+            inputFormats: ['json' => ['application/json'], 'jsonld' => ['application/ld+json']],
             input: BulkUpdateInput::class,
             processor: MediaBulkUpdateProcessor::class,
             name: 'media_bulk_update',
