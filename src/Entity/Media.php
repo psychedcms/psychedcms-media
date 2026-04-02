@@ -56,6 +56,7 @@ use PsychedCms\Media\State\MediaUploadProcessor;
         new Post(
             uriTemplate: '/media/bulk-delete',
             inputFormats: ['json' => ['application/json'], 'jsonld' => ['application/ld+json']],
+            denormalizationContext: [],
             input: BulkDeleteInput::class,
             output: false,
             status: 204,
@@ -65,6 +66,7 @@ use PsychedCms\Media\State\MediaUploadProcessor;
         new Post(
             uriTemplate: '/media/bulk-categorize',
             inputFormats: ['json' => ['application/json'], 'jsonld' => ['application/ld+json']],
+            denormalizationContext: [],
             input: BulkCategorizeInput::class,
             output: false,
             status: 204,
@@ -74,6 +76,7 @@ use PsychedCms\Media\State\MediaUploadProcessor;
         new Post(
             uriTemplate: '/media/bulk-update',
             inputFormats: ['json' => ['application/json'], 'jsonld' => ['application/ld+json']],
+            denormalizationContext: [],
             input: BulkUpdateInput::class,
             output: false,
             status: 204,
