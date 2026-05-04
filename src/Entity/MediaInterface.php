@@ -40,6 +40,10 @@ interface MediaInterface
 
     public function setAltText(?string $altText): static;
 
+    public function getCredits(): ?string;
+
+    public function setCredits(?string $credits): static;
+
     public function getTitle(): ?string;
 
     public function setTitle(?string $title): static;

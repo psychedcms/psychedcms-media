@@ -91,6 +91,7 @@ use PsychedCms\Media\State\MediaUploadProcessor;
     'originalFilename' => 'ipartial',
     'title' => 'ipartial',
     'altText' => 'ipartial',
+    'credits' => 'ipartial',
     'description' => 'ipartial',
     'mimeType' => 'start',
     'storage' => 'exact',

@@ -59,6 +59,11 @@ trait MediaTrait
     #[Groups(['media:read', 'media:write'])]
     private ?string $altText = null;
 
+    #[ORM\Column(length: 500, nullable: true)]
+    #[Assert\Length(max: 500)]
+    #[Groups(['media:read', 'media:write'])]
+    private ?string $credits = null;
+
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Length(max: 255)]
     #[Groups(['media:read', 'media:write'])]
@@ -196,6 +201,18 @@ trait MediaTrait
     public function setAltText(?string $altText): static
     {
         $this->altText = $altText;
+
+        return $this;
+    }
+
+    public function getCredits(): ?string
+    {
+        return $this->credits;
+    }
+
+    public function setCredits(?string $credits): static
+    {
+        $this->credits = $credits;
 
         return $this;
     }

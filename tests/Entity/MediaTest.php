@@ -41,6 +41,9 @@ class MediaTest extends TestCase
         $media->setAltText('A test image');
         $this->assertSame('A test image', $media->getAltText());
 
+        $media->setCredits('Photo: John Doe / @johndoe / cc-by-sa');
+        $this->assertSame('Photo: John Doe / @johndoe / cc-by-sa', $media->getCredits());
+
         $media->setTitle('Test Image');
         $this->assertSame('Test Image', $media->getTitle());
 
@@ -59,6 +62,7 @@ class MediaTest extends TestCase
         $this->assertNull($media->getWidth());
         $this->assertNull($media->getHeight());
         $this->assertNull($media->getAltText());
+        $this->assertNull($media->getCredits());
         $this->assertNull($media->getTitle());
         $this->assertNull($media->getDescription());
         $this->assertNull($media->getCreatedAt());
