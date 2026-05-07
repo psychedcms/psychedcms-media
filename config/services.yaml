@@ -51,11 +51,16 @@ services:
     PsychedCms\Media\Service\ImageOptimizerInterface:
         alias: PsychedCms\Media\Service\ImageOptimizer
 
-    PsychedCms\Media\State\MediaUploadProcessor:
+    PsychedCms\Media\Service\MediaService:
         arguments:
             $defaultStorage: '@default.storage'
-            $storageQuota: '%env(int:MEDIA_STORAGE_QUOTA)%'
             $storageLocator: '@psychedcms.storage.locator'
+            $storageQuota: '%env(int:MEDIA_STORAGE_QUOTA)%'
+
+    PsychedCms\Media\Service\MediaServiceInterface:
+        alias: PsychedCms\Media\Service\MediaService
+
+    PsychedCms\Media\State\MediaUploadProcessor: ~
 
     PsychedCms\Media\State\MediaDeleteProcessor:
         arguments:

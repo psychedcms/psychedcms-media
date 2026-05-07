@@ -15,6 +15,12 @@ interface FileValidatorInterface
     public function validate(UploadedFile $file, bool $skipSizeCheck = false): void;
 
     /**
+     * @throws \PsychedCms\Media\Exception\InvalidFileTypeException
+     * @throws \PsychedCms\Media\Exception\FileSizeExceededException
+     */
+    public function validateBuffer(string $buffer, string $mimeType, bool $skipSizeCheck = false): void;
+
+    /**
      * @throws \PsychedCms\Media\Exception\StorageQuotaExceededException
      */
     public function validateQuota(int $currentTotal, int $newFileSize, int $quota): void;

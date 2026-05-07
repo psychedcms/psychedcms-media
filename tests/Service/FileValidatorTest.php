@@ -35,7 +35,7 @@ class FileValidatorTest extends TestCase
 
     public function testRejectsOversizedFile(): void
     {
-        $validator = new FileValidator(maxSize: 1024);
+        $validator = new FileValidator(maxSizes: ['image' => 1024, 'video' => 1024, 'audio' => 1024, 'document' => 1024]);
         $file = $this->createUploadedFile('test.jpg', 'image/jpeg', 2048);
         $this->expectException(FileSizeExceededException::class);
         $validator->validate($file);
@@ -43,7 +43,7 @@ class FileValidatorTest extends TestCase
 
     public function testAcceptsFileWithinSizeLimit(): void
     {
-        $validator = new FileValidator(maxSize: 2048);
+        $validator = new FileValidator(maxSizes: ['image' => 2048, 'video' => 2048, 'audio' => 2048, 'document' => 2048]);
         $file = $this->createUploadedFile('test.jpg', 'image/jpeg', 1024);
         $validator->validate($file);
         $this->addToAssertionCount(1);

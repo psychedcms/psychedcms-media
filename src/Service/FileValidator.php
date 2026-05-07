@@ -77,7 +77,29 @@ class FileValidator implements FileValidatorInterface
         }
 
         if ($mimeType === 'image/svg+xml') {
-            $this->scanSvgForScripts($file);
+            $content = file_get_contents($file->getPathname());
+            if ($content !== false) {
+                $this->scanSvgContent($content);
+            }
+        }
+    }
+
+    public function validateBuffer(string $buffer, string $mimeType, bool $skipSizeCheck = false): void
+    {
+        if (!\in_array($mimeType, $this->allowedTypes, true)) {
+            throw new InvalidFileTypeException($mimeType);
+        }
+
+        if (!$skipSizeCheck) {
+            $maxSize = $this->getMaxSizeForMimeType($mimeType);
+            $size = \strlen($buffer);
+            if ($size > $maxSize) {
+                throw new FileSizeExceededException($size, $maxSize);
+            }
+        }
+
+        if ($mimeType === 'image/svg+xml') {
+            $this->scanSvgContent($buffer);
         }
     }
 
@@ -115,13 +137,8 @@ class FileValidator implements FileValidatorInterface
         }
     }
 
-    private function scanSvgForScripts(UploadedFile $file): void
+    private function scanSvgContent(string $content): void
     {
-        $content = file_get_contents($file->getPathname());
-        if ($content === false) {
-            return;
-        }
-
         $dangerous = [
             '/<script\b/i',
             '/\bon\w+\s*=/i',
