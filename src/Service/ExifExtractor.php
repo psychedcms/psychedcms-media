@@ -31,9 +31,9 @@ class ExifExtractor implements ExifExtractorInterface
 
     /**
      * @param array<string, mixed> $raw
-     * @return array<string, mixed>
+     * @return array<string, mixed>|null
      */
-    private function normalize(array $raw): array
+    private function normalize(array $raw): ?array
     {
         $data = [];
 
